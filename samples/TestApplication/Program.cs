@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See licence.md file in the project root for full license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using System.Reactive.Linq;
@@ -17,6 +18,7 @@ using Perspex.Diagnostics;
 using Perspex.Layout;
 using Perspex.Media;
 using Perspex.Media.Imaging;
+using Perspex.Threading;
 #if PERSPEX_GTK
 using Perspex.Gtk;
 #endif
@@ -24,8 +26,16 @@ using ReactiveUI;
 
 namespace TestApplication
 {
-    internal class Program
+    internal static class Program
     {
+
+        public static double WrapAngle(this double angle, double cap)
+        {
+            while (angle < 0) angle += cap;
+            while (angle > cap) angle -= cap;
+            return angle;
+        }
+
         private static readonly PerspexList<Node> s_treeData = new PerspexList<Node>
         {
             new Node
@@ -76,6 +86,80 @@ namespace TestApplication
             new Item { Name = "Item 8", Value = "Item 8 Value" },
         };
 
+
+        class ArcWindow : Window
+        {
+            private double _lambda1;
+            private double _lambda2;
+            private bool _swapSegments;
+            private double _ellipseAngle = Math.PI / 2;
+            private double _ellipseHorizontalRadius = 100;
+            private double _ellipseVerticalRadius = 50;
+
+            private Stopwatch _st = Stopwatch.StartNew();
+            private TimeSpan _lastFps;
+            private int _frames;
+
+            public ArcWindow()
+            {
+                Title = "Bezier-Approximated Arcs Demo";
+                var dt = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(10),
+                    IsEnabled = true,
+                };
+                Background = Brushes.Transparent;
+                dt.Tick += delegate
+                {
+                    _lambda1 = (_lambda1 + 0.05).WrapAngle(Math.PI * 2);
+                    _lambda2 = (_lambda2 + 0.03).WrapAngle(Math.PI * 2);
+                    if (Math.Abs(_lambda1 - _lambda2) < 0.013)
+                    {
+                        _swapSegments = !_swapSegments;
+                        _lambda2 = _lambda1;
+                        _lambda1 += 0.05;
+                    }
+                    _ellipseAngle += 1;
+
+                    var lambda1 = _swapSegments ? _lambda2 : _lambda1;
+                    var lambda2 = _swapSegments ? _lambda1 : _lambda2;
+;
+                    InvalidateVisual();
+                };
+                dt.Start();
+
+                Show();
+            }
+
+            public override void Render(DrawingContext drawingContext)
+            {
+                var now = _st.Elapsed;
+                var diff = now - _lastFps;
+                if (diff.Seconds >= 1)
+                {
+                    _lastFps = now;
+                    Title = "FPS: " + _frames;
+                    _frames = 0;
+                }
+
+                _frames++;
+
+                drawingContext.FillRectangle(Brushes.LightGray, new Rect(0, 0, ClientSize.Width, ClientSize.Height));
+
+                //_arcHelper = new EllipticalArc(0, 0, _ellipseHorizontalRadius, _ellipseVerticalRadius, _ellipseAngle, lambda1, lambda2, false);
+
+                var sg = new StreamGeometry();
+                using (var ctx = sg.Open())
+                {
+                    ctx.BeginFigure(new Point(0, 0), false);
+                    ctx.ArcTo(new Point(200,100), new Size(10,5), _ellipseAngle, true, SweepDirection.Clockwise );
+                    ctx.EndFigure(true);
+                }
+                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(ClientSize.Width / 2, ClientSize.Height / 2)))
+                    drawingContext.DrawGeometry(Brushes.Wheat, new Pen(Brushes.Black), sg);
+            }
+        }
+
         private static void Main(string[] args)
         {
             // The version of ReactiveUI currently included is for WPF and so expects a WPF
@@ -94,6 +178,10 @@ namespace TestApplication
             };
 
             TabControl container;
+
+
+            Application.Current.Run(new ArcWindow());
+            return;
 
             Window window = new Window
             {
