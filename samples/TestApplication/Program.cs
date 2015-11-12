@@ -148,15 +148,91 @@ namespace TestApplication
 
                 //_arcHelper = new EllipticalArc(0, 0, _ellipseHorizontalRadius, _ellipseVerticalRadius, _ellipseAngle, lambda1, lambda2, false);
 
+                System.Collections.Generic.List<StreamGeometry> toDraw = new System.Collections.Generic.List<StreamGeometry>();
+
                 var sg = new StreamGeometry();
-                using (var ctx = sg.Open())
+                using (var sgc = sg.Open())
                 {
-                    ctx.BeginFigure(new Point(0, 0), false);
-                    ctx.ArcTo(new Point(200,100), new Size(10,5), _ellipseAngle, true, SweepDirection.Clockwise );
-                    ctx.EndFigure(true);
+                    sgc.BeginFigure(new Point(180, 150), false);
+                    sgc.ArcTo(new Point(240, 150), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
                 }
-                using (drawingContext.PushPostTransform(Matrix.CreateTranslation(ClientSize.Width / 2, ClientSize.Height / 2)))
-                    drawingContext.DrawGeometry(Brushes.Wheat, new Pen(Brushes.Black), sg);
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(360, 150), false);
+                    sgc.ArcTo(new Point(300, 150), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(210, 210), false);
+                    sgc.ArcTo(new Point(210, 270), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(330, 270), false);
+                    sgc.ArcTo(new Point(330, 210), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(480, 270), false);
+                    sgc.ArcTo(new Point(585, 360), new Size(105, 90), 0.0, true, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(180, 330), false);
+                    sgc.ArcTo(new Point(210, 300), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(240, 300), false);
+                    sgc.ArcTo(new Point(270, 330), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(210, 390), false);
+                    sgc.ArcTo(new Point(180, 360), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+
+                sg = new StreamGeometry();
+                using (var sgc = sg.Open())
+                {
+                    sgc.BeginFigure(new Point(270, 360), false);
+                    sgc.ArcTo(new Point(240, 390), new Size(30, 30), 0.0, false, SweepDirection.Clockwise);
+                    sgc.EndFigure(false);
+                }
+                toDraw.Add(sg);
+                // using (drawingContext.PushPostTransform(Matrix.CreateTranslation(ClientSize.Width / 2, ClientSize.Height / 2)))
+                foreach(var x in toDraw)
+                    drawingContext.DrawGeometry(Brushes.Wheat, new Pen(Brushes.Black), x);
             }
         }
 
